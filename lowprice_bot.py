@@ -28,8 +28,8 @@ ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 
 def load_env(env_path=ENV_PATH) -> dict:
     """
-    .env 파일에서 카카오 인증 정보를 읽어옴.
-    코드에 직접 키 값을 작성하지 않고 .env 파일에서 동적으로 파싱합니다.
+    환경변수(os.environ) 또는 .env 파일에서 카카오 인증 정보를 읽어옴.
+    시스템 환경변수(GitHub Actions Secrets 등) 및 .env 파일을 모두 지원합니다.
     """
     env_vars = {}
     target_files = [env_path]
@@ -54,6 +54,12 @@ def load_env(env_path=ENV_PATH) -> dict:
             # 필요한 필수 키가 모두 채워졌으면 중단
             if "KAKAO_REST_API_KEY" in env_vars and "KAKAO_REFRESH_TOKEN" in env_vars:
                 break
+
+    # 시스템 환경변수(GitHub Actions Secrets 등)가 설정되어 있으면 우선 적용
+    for key in ["KAKAO_REST_API_KEY", "KAKAO_CLIENT_SECRET", "KAKAO_REFRESH_TOKEN"]:
+        val = os.environ.get(key)
+        if val:
+            env_vars[key] = val.strip()
 
     return env_vars
 
